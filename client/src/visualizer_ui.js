@@ -1519,8 +1519,8 @@ var VisualizerUI = (function($, window, undefined) {
         } else if (evt.shiftKey && code === $.ui.keyCode.DOWN) {
           autoPaging(false);
         } else if ((Util.isMac ? evt.metaKey : evt.ctrlKey) && code == 'F'.charCodeAt(0)) {
-          evt.preventDefault();
-          showSearchForm();
+          //evt.preventDefault();
+          //showSearchForm();
         } else if (searchActive && (Util.isMac ? evt.metaKey : evt.ctrlKey) && code == 'G'.charCodeAt(0)) {
           evt.preventDefault();
           return moveInFileBrowser(+1);
@@ -2324,7 +2324,6 @@ var VisualizerUI = (function($, window, undefined) {
           on('dblclick', onDblClick).
           on('touchstart', onTouchStart).
           on('touchend', onTouchEnd).
-          on('resize', onResize).
           on('searchResultsReceived', searchResultsReceived).
           on('clearSearch', clearSearch).
           on('clearSVG', showNoDocMessage).

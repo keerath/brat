@@ -87,7 +87,7 @@ var Visualizer = (function($, window, undefined) {
       for (var fi = 0, nfi = 0; fi < this.unsegmentedOffsets.length; fi++) {
         var begin = this.unsegmentedOffsets[fi][0];
         var end = this.unsegmentedOffsets[fi][1];
-      
+
         for (var ti = begin; ti < end; ti++) {
           var c = text.charAt(ti);
           if (c == '\n' || c == '\r') {
@@ -101,7 +101,7 @@ var Visualizer = (function($, window, undefined) {
             begin = ti;
           }
         }
-      
+
         if (begin !== null) {
           this.offsets.push([begin, end]);
           this.segmentedOffsetsMap[nfi++] = fi;
@@ -2778,7 +2778,7 @@ Util.profileStart('rows');
               var text;
               if (rtlmode) {
                 text = svg.text(sentNumGroup, canvasWidth - sentNumMargin + Configuration.visual.margin.x, y - rowPadding,
-                    '' + row.sentence, { 'data-sent': row.sentence }); 
+                    '' + row.sentence, { 'data-sent': row.sentence });
               } else {
                 text = svg.text(sentNumGroup, sentNumMargin - Configuration.visual.margin.x, y - rowPadding,
                     '' + row.sentence, { 'data-sent': row.sentence });
@@ -2835,20 +2835,48 @@ Util.profileStart('chunkFinish');
           var nextChunk = data.chunks[chunkNo + 1];
           var nextSpace = nextChunk ? nextChunk.space : '';
           if (rtlmode) {
-            // Render every text chunk as a SVG text so we maintain control over the layout. When 
-            // rendering as a SVG span (as brat does), then the browser changes the layout on the 
-            // X-axis as it likes in RTL mode.
-            svg.text(textGroup, chunk.textX, chunk.row.textY, chunk.text + nextSpace, {
-              'data-chunk-id': chunk.index
-            });
-          } else {
-            // Original rendering using tspan in ltr mode as it plays nicer with selection
-            sentenceText.span(chunk.text + nextSpace, {
-              x: chunk.textX,
-              y: chunk.row.textY,
-              'data-chunk-id': chunk.index});
-          }
+                svg.text(textGroup, chunk.textX, chunk.row.textY, chunk.text, {
+                'data-chunk-id': chunk.index
+              });
 
+                // If there needs to be space between this chunk and the next one, add a spacer item
+                // that stretches across the entire inter-chunk space. This ensures a smooth
+                // selection.
+              if (nextChunk) {
+                  var spaceX = chunk.textX - sizes.texts.widths[chunk.text];
+                  var spaceWidth = chunk.textX - sizes.texts.widths[chunk.text] - nextChunk.textX;
+                  if (spaceWidth > 0) {
+                  svg.text(textGroup, spaceX, chunk.row.textY, '\u200f\u00a0', {
+                    'data-chunk-id': chunk.index,
+                      textLength: spaceWidth,
+                    lengthAdjust: 'spacingAndGlyphs',
+                      'class': 'spacing'});
+                  }
+              }
+            }
+            else {
+            // Original rendering using tspan in ltr mode as it play nicer with selection
+              sentenceText.span(chunk.text, {
+                x: chunk.textX,
+                y: chunk.row.textY,
+                'data-chunk-id': chunk.index});
+                // If there needs to be space between this chunk and the next one, add a spacer item
+                // that stretches across the entire inter-chunk space. This ensures a smooth
+                // selection.
+                if (nextChunk) {
+                    var spaceX = chunk.textX + sizes.texts.widths[chunk.text];
+                    var spaceWidth = nextChunk.textX - (chunk.textX + sizes.texts.widths[chunk.text]);
+                    if (spaceWidth > 0) {
+                    sentenceText.span('\u00a0', {
+                      x: spaceX,
+                      y: chunk.row.textY,
+                      'data-chunk-id': chunk.index,
+                      textLength: spaceWidth,
+                      lengthAdjust: 'spacingAndGlyphs',
+                      'class': 'spacing'});
+                    }
+                }
+              }
           // chunk backgrounds
           if (chunk.fragments.length) {
             var orderedIdx = [];
@@ -3389,7 +3417,7 @@ Util.profileStart('before render');
             aType.bool = aType.values[0].name;
           }
           // We need attribute values to be stored as an array, in the correct order,
-          // but for efficiency of access later we also create a map of each value 
+          // but for efficiency of access later we also create a map of each value
           // name to the corresponding value dictionary.
           aType.values.byName = {}
           $.each(aType.values, function(valueNo, val) {
